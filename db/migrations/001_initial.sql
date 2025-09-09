@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS logs (
     service TEXT,
     severity TEXT,
     message TEXT,
-    "user" TEXT,
+    username TEXT,
     extra_fields JSONB
 );
 

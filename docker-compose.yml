@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    container_name: logtrack-db
+    environment:
+      POSTGRES_DB: logtrack
+      POSTGRES_USER: logtrack_user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data

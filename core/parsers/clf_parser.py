@@ -9,7 +9,7 @@ class CLFParser(BaseParser):
     127.0.0.1 user-identifier john [20/Jan/2020:21:32:14 -0700] "GET /apache_pb.gif HTTP/1.0" 200 4782
     """
 
-    def __init__(self, service: str):
+    def __init__(self, service: str = "apache"):
         self.service = service  # E.g. "apache" or "NGINX"
 
     def parse_line(self, line: str):
