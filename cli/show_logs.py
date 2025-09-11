@@ -1,3 +1,4 @@
+# PYTHONPATH=. python3 cli/show_logs.py
 from db.init_db import get_db_connection
 
 con = get_db_connection()

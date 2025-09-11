@@ -1,3 +1,4 @@
+# PYTHONPATH=. python3 cli/ingest_logs.py example.clf
 import sys 
 from core.parsers import clf_parser, hdfs_parser, aws_cloudtrail_parser
 from db.init_db import *

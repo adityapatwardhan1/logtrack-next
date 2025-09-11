@@ -1,3 +1,4 @@
+# Just to reset it if I make a mistake, this is for a developer hack
 import os
 import psycopg2
 from dotenv import load_dotenv
