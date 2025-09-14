@@ -12,12 +12,10 @@ def main():
     parser.add_argument('--db-path', default='logtrack.db',
                         help='Path to SQLite database file (default: logtrack.db)')
     parser.add_argument("--zscore", action="store_true", help="Enable z-score based anomaly detection")
-    parser.add_argument("--ml", action="store_true")
     args = parser.parse_args()
 
     # Rules based detection
     try:
-        ml_enabled = bool(args.ml and os.path.exists(args.ml))
         triggered_alerts = evaluate_rules(zscore_enabled=args.zscore)
     except OperationalError as e:
         print('An error occurred when connecting to the database file:')
@@ -32,7 +30,7 @@ def main():
     recorded_alerts = []
     for alert in triggered_alerts:
         recorded_alerts.append(alert)
-        record_alert(alert, args.db_path)
+        record_alert(alert)
 
     num_alerts_triggered = len(triggered_alerts)
     rules_triggered = set(alert["rule_id"] for alert in triggered_alerts)

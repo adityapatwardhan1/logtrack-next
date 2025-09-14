@@ -1,0 +1,52 @@
+[
+  {
+    "id": "apache_error_spike",
+    "rule_type": "keyword_threshold",
+    "service": "apache",
+    "keyword": "error",
+    "threshold": 3,
+    "window_minutes": 5,
+    "description": "Triggered when 'apache' logs 3+ messages containing 'error' in 5 minutes"
+  },
+  {
+    "id": "apache_login_failures_exact",
+    "rule_type": "repeated_message",
+    "message": "login failed",
+    "threshold": 5,
+    "window_minutes": 2,
+    "description": "Triggered when the exact message 'login failed' appears 5+ times in 2 minutes"
+  },
+  {
+    "id": "apache_inactivity_60min",
+    "rule_type": "inactivity",
+    "service": "apache",
+    "max_idle_minutes": 60,
+    "description": "Triggered when no logs from 'apache' appear in the last 60 minutes"
+  },
+  {
+    "id": "apache_login_failures_keyword",
+    "rule_type": "keyword_threshold",
+    "service": "apache",
+    "keyword": "login failed",
+    "threshold": 5,
+    "window_minutes": 2,
+    "description": "Triggered when 'login failed' appears in 'apache' log messages 5+ times in 2 minutes"
+  },
+  {
+    "id": "apache_rate_spike",
+    "rule_type": "rate_spike",
+    "service": "apache",
+    "threshold": 4,
+    "window_seconds": 300,
+    "description": "Triggered when 4+ logs appear from 'apache' within a 5-minute window"
+  },
+  {
+    "id": "apache_zscore_spike",
+    "rule_type": "zscore_anomaly",
+    "service": "apache",
+    "threshold": 3,
+    "window_minutes": 5,
+    "baseline_windows": 6,
+    "description": "Detects z-score spikes in apache log volume"
+  }
+]

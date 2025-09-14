@@ -47,5 +47,9 @@ def main():
         print(f"An exception occured when parsing log file {filename}: {e}")
 
 if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        print("Please provide the name of the file to parse logs from.\n" \
+        "Proper usage example: python3 cli/ingest_logs.py some_log_file.clf")
+        sys.exit(1)
     main()
     

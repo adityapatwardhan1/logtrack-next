@@ -2,17 +2,30 @@ from datetime import datetime, timedelta, timezone
 import math
 from collections import defaultdict
 from db.init_db import get_db_connection
+import psycopg2
+import psycopg2.extras
+from datetime import datetime, timezone
 
-def _parse_timestamp(ts_str: str):
+def _parse_timestamp(ts):
     """
-    Parses a timestamp string in the format '%Y-%m-%d %H:%M:%S' into a timezone-aware datetime object (UTC).
+    Parses a timestamp string or datetime object into a timezone-aware datetime object (UTC).
 
-    :param ts_str: Timestamp string to parse
+    :param ts: Timestamp as a datetime object or string '%Y-%m-%d %H:%M:%S'
     :return: Parsed timezone-aware datetime object in UTC
     """
-    # Parse naive datetime and set UTC timezone explicitly
-    naive_datetime = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
-    return naive_datetime.replace(tzinfo=timezone.utc)
+    if isinstance(ts, datetime):
+        # Normalize to UTC timezone
+        if ts.tzinfo is None:
+            return ts.replace(tzinfo=timezone.utc)
+        else:
+            # Convert to UTC
+            return ts.astimezone(timezone.utc)
+    elif isinstance(ts, str):
+        # Parse naive datetime and set UTC timezone explicitly
+        naive_datetime = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+        return naive_datetime.replace(tzinfo=timezone.utc)
+    else:
+        raise TypeError(f"Unsupported type for timestamp parsing: {type(ts)}")
 
 def find_sliding_windows(events: list[dict], window: timedelta, threshold: int):
     """
@@ -59,7 +72,7 @@ def _keyword_threshold_alerts(dict_cur, rule):
                 "timestamp": _parse_timestamp(row["timestamp"]),
                 "message": row["message"]
             })
-        except Exception:
+        except Exception as e:
             continue
 
     parsed.sort(key=lambda x: x["timestamp"])
@@ -98,8 +111,8 @@ def _repeated_message_alerts(cur, rule):
         "SELECT id, timestamp FROM logs WHERE message = %s", (message,)
     )
     rows = cur.fetchall()
-
     parsed = []
+
     for row in rows:
         try:
             parsed.append({
@@ -180,9 +193,9 @@ def _rate_spike_alerts(cur, rule):
         (service,)
     )
     rows = cur.fetchall()
-
     parsed = []
     for row in rows:
+        print(f"Raw DB timestamp: {row['timestamp']} (type {type(row['timestamp'])})")
         try:
             parsed.append({
                 "id": row["id"],
@@ -276,14 +289,15 @@ def _zscore_alerts(cur, rule):
         ORDER BY timestamp ASC
     """, (service,))
     rows = cur.fetchall()
-
     if not rows:
         print("No logs found")
         return []
 
     # Parse timestamps and find latest (reference "now")
     log_times = []
-    for log_id, ts in rows:
+    for row in rows:
+        log_id = row['id']
+        ts = row['timestamp']
         try:
             dt = _parse_timestamp(ts)
             log_times.append((log_id, dt))
@@ -300,6 +314,9 @@ def _zscore_alerts(cur, rule):
 
     # Bin logs into windows: bucket 0 = oldest, bucket N = most recent
     buckets = defaultdict(list)
+    for i in range(baseline_windows + 1):
+        buckets[i] = []
+
     for log_id, dt in log_times:
         delta_minutes = (now - dt).total_seconds() / 60
         bucket_idx = baseline_windows - int(delta_minutes // window_minutes)
@@ -308,6 +325,7 @@ def _zscore_alerts(cur, rule):
 
     if len(buckets) < baseline_windows + 1:
         return []
+
 
     # Sort buckets by index: oldest to newest
     sorted_indices = list(range(baseline_windows + 1))
@@ -348,10 +366,10 @@ def evaluate_rules(zscore_enabled=False, ml_enabled=False) -> list[dict]:
     :return: List of alert dictionaries triggered by the rules
     """
     con = get_db_connection()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cur.execute("SELECT * FROM rules")
-    rules = [dict(row) for row in cur.fetchall()]
+    rules = cur.fetchall()
     triggered_alerts = []
 
     for rule in rules:

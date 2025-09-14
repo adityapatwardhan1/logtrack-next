@@ -34,7 +34,7 @@ class CLFParser(BaseParser):
         if not regex_match:
             return None
         groups = regex_match.groupdict()
-        timestamp = self.to_uniform_timestamp(groups["datetime"])#datetime.strptime(groups["datetime"], "%d/%b/%Y:%H:%M:%S %z").isoformat()
+        timestamp = self.to_uniform_timestamp(groups["datetime"])
         return {
             "timestamp": timestamp,
             "service": self.service,
