@@ -357,7 +357,7 @@ def _zscore_alerts(cur, rule):
 
     return alerts
 
-def evaluate_rules(zscore_enabled=False, ml_enabled=False) -> list[dict]:
+def evaluate_rules(zscore_enabled=False, db_path=None, ml_enabled=False) -> list[dict]:
     """
     Applies all detection rules on the logs stored in the database and returns triggered alerts.
 
@@ -365,30 +365,36 @@ def evaluate_rules(zscore_enabled=False, ml_enabled=False) -> list[dict]:
     :param ml_enabled: Whether to evaluate ML-based anomaly detection
     :return: List of alert dictionaries triggered by the rules
     """
-    con = get_db_connection()
-    cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    if db_path:  # testing with SQLite
+        import sqlite3
+        con = sqlite3.connect(db_path)
+        con.row_factory = sqlite3.Row
+        cur = con.cursor()
+    else:
+        con = get_db_connection()
+        cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cur.execute("SELECT * FROM rules")
-    rules = cur.fetchall()
-    triggered_alerts = []
+        cur.execute("SELECT * FROM rules")
+        rules = cur.fetchall()
+        triggered_alerts = []
 
-    for rule in rules:
-        rule_type = rule.get("rule_type")
-        if rule_type == "keyword_threshold":
-            triggered_alerts.extend(_keyword_threshold_alerts(cur, rule))
-        elif rule_type == "repeated_message":
-            triggered_alerts.extend(_repeated_message_alerts(cur, rule))
-        elif rule_type == "inactivity":
-            triggered_alerts.extend(_inactivity_alerts(cur, rule))
-        elif rule_type == "rate_spike":
-            triggered_alerts.extend(_rate_spike_alerts(cur, rule))
-        elif rule_type == "user_threshold":
-            triggered_alerts.extend(_user_threshold_alerts(cur, rule))
-        elif rule_type == "zscore_anomaly" and zscore_enabled:
-            triggered_alerts.extend(_zscore_alerts(cur, rule))
-        else:
-            if "rule_type" not in rule:
-                raise ValueError(f"Missing 'rule_type' in rule: {rule}")
+        for rule in rules:
+            rule_type = rule.get("rule_type")
+            if rule_type == "keyword_threshold":
+                triggered_alerts.extend(_keyword_threshold_alerts(cur, rule))
+            elif rule_type == "repeated_message":
+                triggered_alerts.extend(_repeated_message_alerts(cur, rule))
+            elif rule_type == "inactivity":
+                triggered_alerts.extend(_inactivity_alerts(cur, rule))
+            elif rule_type == "rate_spike":
+                triggered_alerts.extend(_rate_spike_alerts(cur, rule))
+            elif rule_type == "user_threshold":
+                triggered_alerts.extend(_user_threshold_alerts(cur, rule))
+            elif rule_type == "zscore_anomaly" and zscore_enabled:
+                triggered_alerts.extend(_zscore_alerts(cur, rule))
+            else:
+                if "rule_type" not in rule:
+                    raise ValueError(f"Missing 'rule_type' in rule: {rule}")
 
-    con.close()
-    return triggered_alerts
+        con.close()
+        return triggered_alerts
