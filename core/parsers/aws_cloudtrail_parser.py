@@ -60,7 +60,7 @@ class CloudTrailParser(BaseParser):
             
         return {
             "timestamp": timestamp,
-            "service": self.service,
+            "service": record.get("eventSource", ""),
             "severity": None,
             "message": record.get("eventName", ""),
             "user": user,
