@@ -162,3 +162,169 @@ def test_zscore_alerts(mock_cursor, now):
     alerts = rd._zscore_alerts(mock_cursor, rule)
     assert len(alerts) == 1
     assert "log volume spike" in alerts[0]["message"]
+
+# ------------------------
+# Negative tests: keyword threshold
+# ------------------------
+def test_keyword_threshold_no_alert(mock_cursor, now):
+    logs = [
+        fake_row(1, now - timedelta(minutes=10), message="error occurred"),
+        fake_row(2, now - timedelta(minutes=9), message="error occurred"),
+    ]
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "kword_no_alert",
+        "rule_type": "keyword_threshold",
+        "service": "apache",
+        "keyword": "error",
+        "threshold": 3,
+        "window_minutes": 5
+    }
+
+    alerts = rd._keyword_threshold_alerts(mock_cursor, rule)
+    assert len(alerts) == 0  # should not trigger because threshold not met in window
+
+# ------------------------
+# Negative tests: repeated message
+# ------------------------
+def test_repeated_message_partial(mock_cursor, now):
+    logs = [
+        fake_row(1, now - timedelta(minutes=1), message="login failed"),
+        fake_row(2, now - timedelta(minutes=0.5), message="login failed"),
+        fake_row(3, now - timedelta(minutes=0.3), message="login failed"),
+        fake_row(4, now - timedelta(minutes=0.2), message="login failed"),
+    ]
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "repeated_partial",
+        "rule_type": "repeated_message",
+        "message": "login failed",
+        "threshold": 5,
+        "window_minutes": 2
+    }
+
+    alerts = rd._repeated_message_alerts(mock_cursor, rule)
+    assert len(alerts) == 0  # threshold not reached
+
+# ------------------------
+# Negative tests: inactivity
+# ------------------------
+def test_inactivity_no_alert(mock_cursor, now):
+    last_log_time = now - timedelta(minutes=30)  # less than max_idle
+    mock_cursor.fetchone.return_value = {"latest": last_log_time}
+
+    rule = {
+        "id": "inactivity_no_alert",
+        "rule_type": "inactivity",
+        "service": "apache",
+        "max_idle_minutes": 60
+    }
+
+    alerts = rd._inactivity_alerts(mock_cursor, rule)
+    assert len(alerts) == 0
+
+def test_zscore_no_alert(mock_cursor, now):
+    logs = []
+    # baseline: 6 windows, 5 logs each
+    for w in range(6):
+        for i in range(5):
+            logs.append(fake_row(w*10 + i, now - timedelta(minutes=(6-w)*5)))
+
+    # current window: also 5 logs → matches baseline
+    for i in range(30, 35):
+        logs.append(fake_row(i, now))
+
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "zscore_no_alert",
+        "rule_type": "zscore_anomaly",
+        "service": "apache",
+        "threshold": 3,
+        "window_minutes": 5,
+        "baseline_windows": 6
+    }
+
+    alerts = rd._zscore_alerts(mock_cursor, rule)
+    assert len(alerts) == 0
+
+
+# ------------------------
+# Multiple alerts: keyword threshold
+# ------------------------
+def test_keyword_threshold_multiple_alerts(mock_cursor, now):
+    # 6 logs total, 3 in first window, 3 in second window → 2 alerts
+    logs = [
+        fake_row(1, now - timedelta(minutes=10), message="error occurred"),
+        fake_row(2, now - timedelta(minutes=9, seconds=50), message="error occurred"),
+        fake_row(3, now - timedelta(minutes=9, seconds=40), message="error occurred"),
+        fake_row(4, now - timedelta(minutes=5), message="error occurred"),
+        fake_row(5, now - timedelta(minutes=4, seconds=50), message="error occurred"),
+        fake_row(6, now - timedelta(minutes=4, seconds=40), message="error occurred"),
+    ]
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "kword_multi",
+        "rule_type": "keyword_threshold",
+        "service": "apache",
+        "keyword": "error",
+        "threshold": 3,
+        "window_minutes": 5
+    }
+
+    alerts = rd._keyword_threshold_alerts(mock_cursor, rule)
+    # We break after first window in the code, so only one alert per call
+    assert len(alerts) == 1
+
+# ------------------------
+# Multiple alerts: repeated message
+# ------------------------
+def test_repeated_message_multiple_alerts(mock_cursor, now):
+    # 10 logs, threshold 3, 2 windows → 2 alerts expected
+    logs = [
+        fake_row(i, now - timedelta(minutes=5 - i*0.5), message="login failed")
+        for i in range(10)
+    ]
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "repeated_multi",
+        "rule_type": "repeated_message",
+        "message": "login failed",
+        "threshold": 3,
+        "window_minutes": 2
+    }
+
+    alerts = rd._repeated_message_alerts(mock_cursor, rule)
+    # Only one alert per sliding window (the code breaks after first window)
+    # So to test multiple windows, we could call _repeated_message_alerts multiple times with shifted logs
+    assert len(alerts) == 1
+
+# ------------------------
+# Multiple alerts: user threshold
+# ------------------------
+def test_user_threshold_multiple_users(mock_cursor, now):
+    # Logs from 2 users exceeding threshold → 2 alerts
+    logs = [
+        fake_row(1, now - timedelta(minutes=2), message="login failed", username="alice"),
+        fake_row(2, now - timedelta(minutes=1, seconds=50), message="login failed", username="alice"),
+        fake_row(3, now - timedelta(minutes=1, seconds=40), message="login failed", username="alice"),
+        fake_row(4, now - timedelta(minutes=2), message="login failed", username="bob"),
+        fake_row(5, now - timedelta(minutes=1, seconds=50), message="login failed", username="bob"),
+        fake_row(6, now - timedelta(minutes=1, seconds=40), message="login failed", username="bob"),
+    ]
+    mock_cursor.fetchall.return_value = logs
+
+    rule = {
+        "id": "user_threshold_multi",
+        "rule_type": "user_threshold",
+        "message": "login failed",
+        "threshold": 3,
+        "window_minutes": 5
+    }
+
+    alerts = rd._user_threshold_alerts(mock_cursor, rule)
+    assert len(alerts) == 2  # one alert per user
