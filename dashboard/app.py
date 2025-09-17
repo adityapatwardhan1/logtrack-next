@@ -29,7 +29,6 @@ def check_credentials(username, password):
     :returns: (True, role) if successful authentication, else (False, None)
     """
     try:
-        print("password =", password)
         con = get_db_connection()
         cur = get_dict_cursor(con)
         cur.execute("SELECT password_hash, role FROM users WHERE username = %s", (username,))
@@ -37,9 +36,7 @@ def check_credentials(username, password):
         if row is None:
             return (False, None)
         else:
-            print(row)
             db_pw_hash, user_role = row['password_hash'], row['role']
-            print(db_pw_hash)
             try:
                 if ph.verify(db_pw_hash, password):
                     return (True, user_role)

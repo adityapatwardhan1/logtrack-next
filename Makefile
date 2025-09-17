@@ -1,4 +1,4 @@
-.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate user show
+.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate user show dash
 
 reinit:
 	PYTHONPATH=. python3 db/reset_db.py
@@ -20,8 +20,12 @@ ingest:
 	PYTHONPATH=. python3 cli/ingest_logs.py $(file)
 	PYTHONPATH=. python3 cli/show_logs.py
 
-show:
+print:
 	PYTHONPATH=. python3 cli/show_logs.py
+
+dash:
+	streamlit run dashboard/app.py
+
 detect:
 	PYTHONPATH=. python3 cli/run_detection.py
 
