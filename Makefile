@@ -1,4 +1,4 @@
-.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate 
+.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate user
 
 reinit:
 	PYTHONPATH=. python3 db/reset_db.py
@@ -41,3 +41,8 @@ activate:
 	@echo "Each make command creates its own shell so you need to activate the venv manually."
 	@echo "Run the following to activate the virtual environment:"
 	@echo "source venv/bin/activate"
+
+role ?= user
+user:
+	@read -p "Password for $(username): " password; \
+	PYTHONPATH=. python3 cli/create_user.py $(username) $$password -r $(role)
