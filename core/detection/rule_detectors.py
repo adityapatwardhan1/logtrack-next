@@ -6,35 +6,33 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime, timezone
 
-def _parse_timestamp(ts):
+def _parse_timestamp(timestamp):
     """
-    Parses a timestamp string or datetime object into a timezone-aware datetime object (UTC).
-
-    :param ts: Timestamp as a datetime object or string '%Y-%m-%d %H:%M:%S'
-    :return: Parsed timezone-aware datetime object in UTC
+    Converts a timestamp string or datetime object into a UTC datetime object
+    :param timestamp: Timestamp (datetime object or string '%Y-%m-%d %H:%M:%S')
+    :return: UTC datetime object
     """
-    if isinstance(ts, datetime):
+    if isinstance(timestamp, datetime):
         # Normalize to UTC timezone
-        if ts.tzinfo is None:
-            return ts.replace(tzinfo=timezone.utc)
+        if timestamp.tzinfo is None:
+            return timestamp.replace(tzinfo=timezone.utc)
         else:
             # Convert to UTC
-            return ts.astimezone(timezone.utc)
-    elif isinstance(ts, str):
-        # Parse naive datetime and set UTC timezone explicitly
-        naive_datetime = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+            return timestamp.astimezone(timezone.utc)
+    elif isinstance(timestamp, str):
+        # Parse naive datetime, set UTC timezone
+        naive_datetime = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
         return naive_datetime.replace(tzinfo=timezone.utc)
     else:
-        raise TypeError(f"Unsupported type for timestamp parsing: {type(ts)}")
+        raise TypeError(f"Unsupported type for timestamp parsing: {type(timestamp)}")
 
 def find_sliding_windows(events: list[dict], window: timedelta, threshold: int):
     """
-    Yields slices of events where the number of events in the time window meets or exceeds the threshold
-
+    Yields windows of a certain time length which contain threshold number of events
     :param events: Sorted list of dicts with 'timestamp' key (timezone-aware datetime objects)
     :param window: Time window size as timedelta
-    :param threshold: Minimum number of events within window to yield
-    :yields: tuple(start_index, end_index) indexes into events list defining a valid window
+    :param threshold: Minimum number of events in the window to yield
+    :yields: tuple(start_index, end_index) indexes of events which define a valid window 
     """
     left = 0
     for right in range(len(events)):
@@ -51,7 +49,7 @@ def _keyword_threshold_alerts(dict_cur, rule):
     :param cur: Postgres database cursor (RealDictCursor)
     :param rule: Rule dictionary containing keys:
                  'service', 'keyword', 'threshold', 'window_minutes', 'id'
-    :return: List of triggered alert dictionaries
+    :return: List of triggered alerts, with each alert corresponding to a dict/JSON
     """
     service = rule["service"]
     keyword = rule["keyword"]
@@ -281,7 +279,6 @@ def _zscore_alerts(cur, rule):
         print("Missing service or threshold")
         return []
 
-    # Fetch all logs for the service
     cur.execute("""
         SELECT id, timestamp FROM logs
         WHERE service = %s
@@ -293,14 +290,13 @@ def _zscore_alerts(cur, rule):
         print("No logs found")
         return []
 
-    # Parse timestamps and find latest (reference "now")
     log_times = []
     for row in rows:
         log_id = row['id']
-        ts = row['timestamp']
+        timestamp = row['timestamp']
         try:
-            dt = _parse_timestamp(ts)
-            log_times.append((log_id, dt))
+            datetime_obj = _parse_timestamp(timestamp)
+            log_times.append((log_id, datetime_obj))
         except Exception:
             continue
 
@@ -309,25 +305,25 @@ def _zscore_alerts(cur, rule):
         return []
 
     # Use latest log time as "now"
-    max_time = max(dt for _, dt in log_times)
+    max_time = max(datetime_obj for _, datetime_obj in log_times)
     now = max_time
 
-    # Bin logs into windows: bucket 0 = oldest, bucket N = most recent
+    # Bin logs into windows
     buckets = defaultdict(list)
     for i in range(baseline_windows + 1):
         buckets[i] = []
 
-    for log_id, dt in log_times:
-        delta_minutes = (now - dt).total_seconds() / 60
+    for log_id, datetime_obj in log_times:
+        delta_minutes = (now - datetime_obj).total_seconds() / 60
         bucket_idx = baseline_windows - int(delta_minutes // window_minutes)
         if 0 <= bucket_idx <= baseline_windows:
-            buckets[bucket_idx].append((log_id, dt))
+            buckets[bucket_idx].append((log_id, datetime_obj))
 
     if len(buckets) < baseline_windows + 1:
         return []
 
 
-    # Sort buckets by index: oldest to newest
+    # Sort buckets oldest to newest
     sorted_indices = list(range(baseline_windows + 1))
     baseline_counts = [len(buckets[idx]) for idx in sorted_indices[:-1]]
     current_count = len(buckets[sorted_indices[-1]])
