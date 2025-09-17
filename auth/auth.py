@@ -32,7 +32,7 @@ def verify_user(username: str, input_password: str) -> bool:
     """Determines whether a username-password combination exists"""
 
     con = get_db_connection()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
     row = cur.fetchone()
     con.close()
@@ -44,4 +44,5 @@ def verify_user(username: str, input_password: str) -> bool:
         ph.verify(row["password_hash"], input_password)
         return True
     except VerifyMismatchError:
+        print("verification failed")
         return False
