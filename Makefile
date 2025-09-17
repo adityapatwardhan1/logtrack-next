@@ -1,4 +1,9 @@
-.PHONY: init-db reset-db ingest run-detection test venv activate docker-up docker-down 
+.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate 
+
+reinit:
+	PYTHONPATH=. python3 db/reset_db.py
+	PYTHONPATH=. python3 db/init_db.py
+	PYTHONPATH=. python3 migrate_rules.py
 
 init-db:
 	PYTHONPATH=. python3 db/init_db.py
@@ -6,6 +11,10 @@ init-db:
 
 reset-db:
 	PYTHONPATH=. python3 db/reset_db.py
+
+ingest-detect:
+	PYTHONPATH=. python3 cli/ingest_logs.py $(file)
+	PYTHONPATH=. python3 cli/run_detection.py
 
 ingest:
 	PYTHONPATH=. python3 cli/ingest_logs.py $(file)
