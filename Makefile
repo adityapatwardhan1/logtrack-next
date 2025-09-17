@@ -44,5 +44,7 @@ activate:
 
 role ?= user
 user:
-	@read -p "Password for $(username): " password; \
+	@stty -echo; \
+	read -p "Password for $(username): " password; echo; \
+	stty echo; \
 	PYTHONPATH=. python3 cli/create_user.py $(username) $$password -r $(role)
