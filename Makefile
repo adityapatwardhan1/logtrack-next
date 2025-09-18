@@ -24,7 +24,7 @@ print:
 	PYTHONPATH=. python3 cli/show_logs.py
 
 dash:
-	streamlit run dashboard/app.py
+	. venv/bin/activate && PYTHONPATH=. streamlit run dashboard/app.py
 
 detect:
 	PYTHONPATH=. python3 cli/run_detection.py

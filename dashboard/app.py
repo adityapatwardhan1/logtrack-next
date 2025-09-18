@@ -2,21 +2,14 @@ import os
 import sys
 import traceback
 import streamlit as st
-import psycopg2
-import psycopg2.extras
 import pandas as pd
 from pathlib import Path
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from db.init_db import get_db_connection, get_dict_cursor
 
-from db.init_db import get_db_connection
 
-DB_PATH = Path("logtrack.db")
 ph = PasswordHasher()
-
-def get_dict_cursor(con):
-    return con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
 # User authorization
 def check_credentials(username, password):
@@ -30,7 +23,7 @@ def check_credentials(username, password):
     """
     try:
         con = get_db_connection()
-        cur = get_dict_cursor(con)
+        cur = get_dict_cursor(con=con)
         cur.execute("SELECT password_hash, role FROM users WHERE username = %s", (username,))
         row = cur.fetchone()
         if row is None:
@@ -76,7 +69,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # Dashboard
-st.set_page_config(page_title="LogTrack Dashboard", layout="wide")
+st.set_page_config(page_title="LogTrack Dashboard")
 st.title("📊 LogTrack Monitoring Dashboard")
 
 # Sidebar
@@ -93,19 +86,25 @@ def get_connection():
 def load_logs(limit):
     """Loads up to limit number of logs from database"""
     con = get_connection()
-    df = pd.read_sql_query(
-        f"SELECT id, timestamp, service, message, user FROM logs ORDER BY timestamp DESC LIMIT {limit}",
-        con
+    cur = get_dict_cursor(con=con)
+    cur.execute(
+        "SELECT id, timestamp, service, message, username FROM logs "
+        "ORDER BY timestamp DESC LIMIT %s",
+        (limit,)
     )
+    rows = cur.fetchall()
     con.close()
-    return df
+    return rows 
 
 def load_alerts():
     """Loads alerts from database"""
     con = get_connection()
-    df = pd.read_sql_query("SELECT * FROM alerts ORDER BY triggered_at DESC", con)
+    cur = get_dict_cursor(con=con)
+    cur.execute("SELECT * FROM alerts ORDER BY triggered_at DESC")
+    rows = cur.fetchall()
     con.close()
-    return df
+    return rows
+
 
 # Tabs
 tabs = st.tabs(["🪵 Logs", "🚨 Alerts"])
@@ -113,25 +112,25 @@ tabs = st.tabs(["🪵 Logs", "🚨 Alerts"])
 # Logs Tab
 with tabs[0]:
     st.subheader("Recent Logs")
-    logs_df = load_logs(log_limit)
-    st.dataframe(logs_df, use_container_width=True)
+    logs = load_logs(log_limit)
+    st.dataframe(logs)
 
 # Alerts Tab
 with tabs[1]:
     st.subheader("Triggered Alerts")
-    alerts_df = load_alerts()
-    if alerts_df.empty:
+    alerts = load_alerts()
+    if not alerts:
         st.info("No alerts found.")
     else:
-        st.dataframe(alerts_df, use_container_width=True)
+        st.dataframe(alerts)
 
         # Optional: Show expanded alert details
         with st.expander("🔍 View Rule Details for First Alert"):
-            first_alert = alerts_df.iloc[0]
+            first_alert = alerts[0]
             st.json({
                 "rule_id": first_alert["rule_id"],
                 "message": first_alert["message"],
-                "log_ids": first_alert["related_log_ids"].split(",")
+                "log_ids": first_alert["related_log_ids"]
             })
 
 # Optional: Logout

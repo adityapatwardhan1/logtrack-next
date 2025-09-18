@@ -1,5 +1,6 @@
 import os
 import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +22,9 @@ def get_db_connection():
         user=DB_USER,
         password=DB_PASSWORD
     )
+
+def get_dict_cursor(con):
+    return con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
 def initialize_db():
     """Initializes database at DB_NAME with schema from SCHEMA_FILE"""
