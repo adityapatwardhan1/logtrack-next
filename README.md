@@ -1,6 +1,6 @@
-# LogTrack Next
+# LogTrack
 
-LogTrack Next is a log monitoring and anomaly detection system with an optional dashboard built using Streamlit. This setup focuses on **reproducibility**, using Docker for the PostgreSQL database and a Makefile for all commands.
+LogTrack is a log monitoring and anomaly detection system with an optional dashboard built using Streamlit. This setup focuses on **reproducibility**, using Docker for the PostgreSQL database and a Makefile for all commands.
 
 ---
 
@@ -59,6 +59,7 @@ sudo make docker-down         # Stop database container
 In another terminal (while Docker is running):
 
 ```
+source venv/bin/activate
 make reinit                    # Reset & initialize database and migrate rules
 make user username=yourname    # Create a user; follow prompt to set password
 make dash                      # Start the Streamlit dashboard
