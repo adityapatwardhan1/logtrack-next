@@ -33,10 +33,10 @@ test:
 	PYTHONPATH=. pytest -q
 
 docker-up:
-	docker-compose up --build
+	docker compose up --build
 
 docker-down:
-	docker-compose down
+	docker compose down
 
 venv:
 	python3 -m venv venv
