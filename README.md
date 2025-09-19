@@ -16,7 +16,7 @@ LogTrack is a log monitoring and anomaly detection system with an optional dashb
   - Z-score statistical detector  
 - **CLI**: Ingest logs, run detection, view logs, create users  
 - **Dashboard**: Streamlit UI to explore logs and alerts (optional)  
-- **User management**: Hashed passwords (RBAC planned for later)  
+- **User management**: Hashed passwords (argon2-cffi)  
 - **Tests**: Pytest-based unit tests for detection logic  
 
 ---
