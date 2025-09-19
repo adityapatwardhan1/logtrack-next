@@ -139,22 +139,24 @@ http://localhost:8501
 
 ## Common Make Commands
 
-| Command                     | Description                             |
-|-----------------------------|-------------------------------------|
-| `make reinit`               | Reset DB, initialize, migrate rules  |
-| `make init-db`              | Initialize DB and migrate rules       |
-| `make reset-db`             | Clear the database                    |
-| `make ingest-detect file=<filename>` | Ingest logs from a file and run detection |
-| `make ingest file=<filename>`          | Ingest logs only                 |
-| `make detect`               | Run anomaly detection                 |
-| `make print`                | Show logs in CLI                     |
-| `make test`                 | Run tests                           |
-| `make dash`                 | Launch Streamlit dashboard           |
-| `make docker-up`            | Start PostgreSQL container via Docker|
-| `make docker-down`          | Stop PostgreSQL container            |
-| `make venv`                 | Create virtual environment & install dependencies |
-| `make activate`             | Instructions to activate virtual environment |
-| `make user username=<name>` | Create a new user (prompt for password) |
+| Command                               | Description                                           |
+|---------------------------------------|-------------------------------------------------------|
+| `make reinit`                         | Reset DB, initialize, migrate rules                   |
+| `make init-db`                        | Initialize DB and migrate rules                       |
+| `make reset-db`                       | Clear the database                                    |
+| `make ingest-detect file=<filename>`  | Ingest logs from a file and run detection             |
+| `make ingest file=<filename>`         | Ingest logs only                                      |
+| `make detect`                         | Run anomaly detection                                 |
+| `make print`                          | Show logs in CLI                                      |
+| `make test`                           | Run tests                                             |
+| `make dash`                           | Launch Streamlit dashboard                            |
+| `make docker-up`                      | Start PostgreSQL container via Docker                 |
+| `make docker-down`                    | Stop PostgreSQL container                             |
+| `make venv`                           | Create virtual environment & install dependencies     |
+| `make activate`                       | Instructions to activate virtual environment          |
+| `make user username=<name>`           | Create a new user (prompt for password)               |
+| `make clear-alerts`                   | Delete all alerts from the database                   |
+| `make clear-logs hours=<n>`           | Delete logs older than `<n>` hours (e.g. `hours=24`)  |
 
 ---
 

@@ -1,4 +1,4 @@
-.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate user show dash
+.PHONY: reinit init-db reset-db ingest-detect ingest detect test docker-up docker-down venv activate user show dash clear-alerts clear-logs
 
 reinit:
 	PYTHONPATH=. python3 db/reset_db.py
@@ -42,6 +42,12 @@ venv:
 	python3 -m venv venv
 	. venv/bin/activate && pip install --upgrade pip
 	. venv/bin/activate && pip install -r requirements.txt
+
+clear-alerts:
+	PYTHONPATH=. python3 cli/cleanup.py alerts
+
+clear-logs:
+	PYTHONPATH=. python3 cli/cleanup.py logs $(hours)
 
 activate:
 	@echo "Each make command creates its own shell so you need to activate the venv manually."
