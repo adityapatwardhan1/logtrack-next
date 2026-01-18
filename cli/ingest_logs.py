@@ -6,6 +6,7 @@ from psycopg2.extras import Json
 import argparse
 import json
 from pathlib import Path
+import os
 
 ARTIFACT_PARSED_PATH = Path("artifacts/parsed/clf_parsed.json")
 
@@ -25,6 +26,8 @@ def main():
     parser.add_argument("filename", help="Log file to ingest")
     parser.add_argument("--emit-artifacts", action="store_true",
                         help="Emit parsed log artifacts for CI validation")
+    emit_artifacts = os.getenv("EMIT_ARTIFACTS") == "1"
+
     args = parser.parse_args()
     # Filename
     filename = args.filename
@@ -43,7 +46,7 @@ def main():
     try:
         log_data = parser.parse_file(filename)
 
-        if args.emit_artifacts:
+        if emit_artifacts:
             ARTIFACT_PARSED_PATH.parent.mkdir(parents=True, exist_ok=True)
             normalized_logs = [
                 canonicalize_log(log)
@@ -60,7 +63,7 @@ def main():
                 json.dump(normalized_logs, f, indent=2)
             print(f"Parsed artifacts written to {ARTIFACT_PARSED_PATH}")
         else:
-            print("args.emit_artifacts is False")
+            print("emit_artifacts is False")
 
         con = get_db_connection()
         cur = con.cursor()

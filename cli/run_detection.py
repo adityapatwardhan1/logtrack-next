@@ -6,6 +6,7 @@ from core.detection.rule_detectors import evaluate_rules
 from core.detection.alert_manager import record_alert
 import json
 from pathlib import Path
+import os
 
 ARTIFACT_ALERTS_PATH = Path("artifacts/alerts/clf_alerts.json")
 
@@ -23,7 +24,7 @@ def main():
     parser.add_argument('--db-path', default='logtrack.db',
                         help='Path to SQLite database file (default: logtrack.db)')
     parser.add_argument("--zscore", action="store_true", help="Enable z-score based anomaly detection")
-    parser.add_argument("--emit-artifacts", action="store_true")
+    emit_artifacts = os.getenv("EMIT_ARTIFACTS") == "1"
     args = parser.parse_args()
 
     # Rules based detection
@@ -45,7 +46,7 @@ def main():
         recorded_alerts.append(alert)
         record_alert(alert)
 
-    if args.emit_artifacts:
+    if emit_artifacts:
         ARTIFACT_ALERTS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
         normalized_alerts = sorted(
