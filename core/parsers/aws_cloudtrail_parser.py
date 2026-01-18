@@ -1,4 +1,5 @@
 import json
+
 from core.parsers.base_parser import BaseParser
 
 

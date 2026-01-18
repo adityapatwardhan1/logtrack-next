@@ -1,10 +1,12 @@
 # Run from project root with: PYTHONPATH=. pytest -q
 # Test generated with help from ChatGPT (OpenAI), 2025-09-16
 
+from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock
+
 # tests/test_detection.py
 import pytest
-from unittest.mock import MagicMock
-from datetime import datetime, timedelta, timezone
+
 from core.detection import rule_detectors as rd
 
 

@@ -1,7 +1,9 @@
 import traceback
+
 import streamlit as st
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+
 from db.init_db import get_db_connection, get_dict_cursor
 
 ph = PasswordHasher()

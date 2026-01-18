@@ -1,11 +1,13 @@
 # Run from project root with: PYTHONPATH=. pytest -q
 # Test generated with help from ChatGPT (OpenAI), 2025-09-08
 
-import pytest
-from core.parsers.aws_cloudtrail_parser import CloudTrailParser
 import json
-import tempfile
 import os
+import tempfile
+
+import pytest
+
+from core.parsers.aws_cloudtrail_parser import CloudTrailParser
 
 # Sample CloudTrail JSON (truncated for brevity)
 SAMPLE_CLOUDTRAIL = {
