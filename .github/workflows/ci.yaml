@@ -1,17 +1,15 @@
 # -----------------------------------------------------------------------------
 # LogTrack CI Workflow
 # -----------------------------------------------------------------------------
-# Project: LogTrack (https://github.com/<your-repo>)
-# Contributors: ChatGPT (OpenAI) — advised on CI design, job sequencing, E2E, and artifact validation
+# Project: LogTrack (https://github.com/adityapatwardhan1/logtrack-next/)
 # Version: 1.3
 # Date: 2026-01-17
 # -----------------------------------------------------------------------------
 # Description:
 #   Continuous Integration for LogTrack.
-#   - Checkout and Python environment setup
 #   - Unit tests
-#   - Golden-path E2E using PostgreSQL container
-#   - Artifact upload/download for deterministic CI validation
+#   - Golden-path E2E using PostgreSQL service
+#   - Artifact upload/download for deterministic validation
 # -----------------------------------------------------------------------------
 
 name: LogTrack CI
@@ -28,8 +26,10 @@ jobs:
   # ------------------------
   unit-tests:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -43,10 +43,11 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run pytest
+      - name: Run unit tests
         run: |
           . venv/bin/activate
           PYTHONPATH=. pytest -q
+
 
   # ------------------------
   # Job 2: Golden-path E2E
@@ -54,6 +55,7 @@ jobs:
   ci-e2e:
     runs-on: ubuntu-latest
     needs: unit-tests
+
     services:
       db:
         image: postgres:15
@@ -68,8 +70,10 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -91,8 +95,52 @@ jobs:
           . venv/bin/activate
           make ci-e2e
 
-      - name: Upload artifacts
+      - name: Upload parsed artifacts
         uses: actions/upload-artifact@v4
         with:
           name: logtrack-artifacts
+          path: artifacts/parsed/*
+
+
+  # ------------------------
+  # Job 3: Artifact validation
+  # ------------------------
+  assert-artifacts:
+    runs-on: ubuntu-latest
+    needs: ci-e2e
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download artifacts from E2E
+        uses: actions/download-artifact@v4
+        with:
+          name: logtrack-artifacts
           path: artifacts/parsed
+
+      - name: Verify artifacts exist
+        run: |
+          ls -l artifacts/parsed
+          test -f artifacts/parsed/clf_alerts.json
+          test -f artifacts/parsed/clf_parsed.json
+
+      - name: Assert alerts artifact
+        run: |
+          diff -bB artifacts/parsed/clf_alerts.json samples/expected/clf_alerts.json
+
+      - name: Assert parsed logs artifact
+        run: |
+          diff -bB artifacts/parsed/clf_parsed.json samples/expected/clf_parsed.json
