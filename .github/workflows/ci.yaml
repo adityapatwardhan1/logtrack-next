@@ -2,8 +2,7 @@
 # LogTrack CI Workflow
 # -----------------------------------------------------------------------------
 # Project: LogTrack (https://github.com/<your-repo>)
-# Contributors: ChatGPT (OpenAI) — advised on CI design, job sequencing,
-#   E2E, and artifact validation
+# Contributors: ChatGPT (OpenAI) — advised on CI design, job sequencing, E2E, and artifact validation
 # Version: 1.3
 # Date: 2026-01-17
 # -----------------------------------------------------------------------------
@@ -13,7 +12,6 @@
 #   - Unit tests
 #   - Golden-path E2E using PostgreSQL container
 #   - Artifact upload/download for deterministic CI validation
-#   Guidance and structure adapted from ChatGPT (OpenAI)
 # -----------------------------------------------------------------------------
 
 name: LogTrack CI
@@ -85,7 +83,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run E2E and upload artifacts
+      - name: Run E2E and generate artifacts
         env:
           FILE: samples/clf_golden.clf
           EMIT_ARTIFACTS: "1"
@@ -94,7 +92,7 @@ jobs:
           make ci-e2e
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v4
         with:
           name: logtrack-artifacts
           path: artifacts/parsed
@@ -121,7 +119,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Download artifacts from E2E
-        uses: actions/download-artifact@latest
+        uses: actions/download-artifact@v4
         with:
           name: logtrack-artifacts
           path: artifacts/parsed
