@@ -3,6 +3,7 @@ import csv
 from io import StringIO
 from datetime import datetime
 
+
 class HDFSParser(BaseParser):
     """
     Class for parsing Hadoop Distributed File System files
@@ -12,9 +13,9 @@ class HDFSParser(BaseParser):
     2,081109,203518,35,INFO,dfs.FSNamesystem,BLOCK* NameSystem.allocateBlock: /mnt/hadoop/mapred/system/job_200811092030_0001/job.jar. blk_-1608999687919862906,E22,BLOCK* NameSystem.allocateBlock:<*>
     Source:
     Reference:
-    Shilin He, Jieming Zhu, Pinjia He, and Michael R. Lyu. 
-    "Experience Report: System Log Analysis for Anomaly Detection." 
-    IEEE International Symposium on Software Reliability Engineering (ISSRE), 2016. 
+    Shilin He, Jieming Zhu, Pinjia He, and Michael R. Lyu.
+    "Experience Report: System Log Analysis for Anomaly Detection."
+    IEEE International Symposium on Software Reliability Engineering (ISSRE), 2016.
     [Most Influential Paper Award]
     """
 
@@ -23,7 +24,7 @@ class HDFSParser(BaseParser):
         Parses line into the below schema
         {
         "timestamp": str,        # e.g. "YYYY-MM-DD HH:MM:SS"
-        "service": str,          
+        "service": str,
         "severity": str | None,  # e.g. "INFO", "WARN", "ERROR" (if available)
         "message": str,          # raw log text
         "user": str | None,      # user identifier if extractable
@@ -31,14 +32,16 @@ class HDFSParser(BaseParser):
         }
         """
         ...
-        reader = csv.reader(StringIO(line))  # Handles commas inside messages if in quotes
+        reader = csv.reader(
+            StringIO(line)
+        )  # Handles commas inside messages if in quotes
         fields = next(reader)
-        
+
         try:
             timestamp = self.to_uniform_timestamp(fields[1], fields[2])
         except:
             timestamp = None
-        
+
         return {
             "timestamp": timestamp,
             "service": "HDFS",
@@ -50,7 +53,6 @@ class HDFSParser(BaseParser):
                 "Pid": fields[3],
                 "Component": fields[5],
                 "EventId": fields[7],
-                "EventTemplate": fields[8]
-            }
+                "EventTemplate": fields[8],
+            },
         }
-        

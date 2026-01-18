@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod 
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+
 
 class BaseParser(ABC):
     """
@@ -7,7 +8,7 @@ class BaseParser(ABC):
     Each parser parse logs into this JSON format
     {
         "timestamp": str,        # e.g. "YYYY-MM-DD HH:MM:SS"
-        "service": str,          
+        "service": str,
         "severity": str | None,  # e.g. "INFO", "WARN", "ERROR" (if available)
         "message": str,          # raw log text
         "user": str | None,      # user identifier if extractable
@@ -22,13 +23,13 @@ class BaseParser(ABC):
         """Converts a datetime object to UTC and formats it uniformly"""
         timestamp_str = " ".join(parts).strip()
         default_formats = [
-            "%Y-%m-%dT%H:%M:%S.%fZ",        # ISO w/ microseconds and Z
-            "%Y-%m-%dT%H:%M:%SZ",           # ISO basic Zulu
-            "%Y-%m-%dT%H:%M:%S%z",          # ISO with timezone
-            "%d/%b/%Y:%H:%M:%S %z",         # CLF (Apache)
-            "%y%m%d %H%M%S",                # HDFS style 1
-            "%Y-%m-%d %H:%M:%S,%f",         # HDFS style 2
-            "%Y-%m-%d %H:%M:%S",            # Plain
+            "%Y-%m-%dT%H:%M:%S.%fZ",  # ISO w/ microseconds and Z
+            "%Y-%m-%dT%H:%M:%SZ",  # ISO basic Zulu
+            "%Y-%m-%dT%H:%M:%S%z",  # ISO with timezone
+            "%d/%b/%Y:%H:%M:%S %z",  # CLF (Apache)
+            "%y%m%d %H%M%S",  # HDFS style 1
+            "%Y-%m-%d %H:%M:%S,%f",  # HDFS style 2
+            "%Y-%m-%d %H:%M:%S",  # Plain
         ]
 
         # Try each format
@@ -40,7 +41,6 @@ class BaseParser(ABC):
                 continue
 
         raise ValueError(f"No format matched timestamp: {timestamp_str}")
-    
 
     @abstractmethod
     def parse_line(self, line: str):
@@ -61,10 +61,10 @@ class BaseParser(ABC):
         :param file_path: Path to the file
         :type file_path: str
         :returns: List containing data for each log (list of dicts)
-        :rtype: list[dict] 
+        :rtype: list[dict]
         """
         all_log_data = []
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
                 if line == "":
@@ -72,5 +72,7 @@ class BaseParser(ABC):
                 try:
                     all_log_data.append(self.parse_line(line))
                 except Exception as e:
-                    print(f"Exception when parsing log file at {file_path}: {e}")
+                    print(
+                        f"Exception when parsing log file at {file_path}: {e}"
+                    )
         return all_log_data

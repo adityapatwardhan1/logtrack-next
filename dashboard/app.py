@@ -1,4 +1,4 @@
-import os 
+import os
 import sys
 import traceback
 import streamlit as st
@@ -8,8 +8,8 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from db.init_db import get_db_connection, get_dict_cursor
 
-
 ph = PasswordHasher()
+
 
 # User authorization
 def check_credentials(username, password):
@@ -24,12 +24,15 @@ def check_credentials(username, password):
     try:
         con = get_db_connection()
         cur = get_dict_cursor(con=con)
-        cur.execute("SELECT password_hash, role FROM users WHERE username = %s", (username,))
+        cur.execute(
+            "SELECT password_hash, role FROM users WHERE username = %s",
+            (username,),
+        )
         row = cur.fetchone()
         if row is None:
             return (False, None)
         else:
-            db_pw_hash, user_role = row['password_hash'], row['role']
+            db_pw_hash, user_role = row["password_hash"], row["role"]
             try:
                 if ph.verify(db_pw_hash, password):
                     return (True, user_role)
@@ -38,6 +41,7 @@ def check_credentials(username, password):
     except Exception as e:
         print(f"An exception occurred when authenticating {username}: {e}")
         return (False, None)
+
 
 # Login page
 if "logged_in" not in st.session_state:
@@ -62,9 +66,13 @@ if not st.session_state.logged_in:
                 else:
                     st.error("Invalid username or password.")
             except Exception:
-                print(f"Unexpected error during login attempt for user '{username}':")
+                print(
+                    f"Unexpected error during login attempt for user '{username}':"
+                )
                 traceback.print_exc()
-                st.error("An unexpected error occurred. Please try again later.")
+                st.error(
+                    "An unexpected error occurred. Please try again later."
+                )
 
     st.stop()
 
@@ -76,12 +84,14 @@ st.title("📊 LogTrack Monitoring Dashboard")
 st.sidebar.header("🔎 Filters")
 log_limit = st.sidebar.slider("Number of logs to show", 10, 500, 100)
 
+
 def get_connection():
     try:
         return get_db_connection()
     except Exception as e:
         print(f"An exception occurred when connecting to log database: {e}")
         print("Rule of thumb: run `make reinit` to ensure the database exists")
+
 
 def load_logs(limit):
     """Loads up to limit number of logs from database"""
@@ -90,11 +100,12 @@ def load_logs(limit):
     cur.execute(
         "SELECT id, timestamp, service, message, username FROM logs "
         "ORDER BY timestamp DESC LIMIT %s",
-        (limit,)
+        (limit,),
     )
     rows = cur.fetchall()
     con.close()
-    return rows 
+    return rows
+
 
 def load_alerts():
     """Loads alerts from database"""
@@ -127,11 +138,13 @@ with tabs[1]:
         # Optional: Show expanded alert details
         with st.expander("🔍 View Rule Details for First Alert"):
             first_alert = alerts[0]
-            st.json({
-                "rule_id": first_alert["rule_id"],
-                "message": first_alert["message"],
-                "log_ids": first_alert["related_log_ids"]
-            })
+            st.json(
+                {
+                    "rule_id": first_alert["rule_id"],
+                    "message": first_alert["message"],
+                    "log_ids": first_alert["related_log_ids"],
+                }
+            )
 
 # Optional: Logout
 st.sidebar.markdown("---")

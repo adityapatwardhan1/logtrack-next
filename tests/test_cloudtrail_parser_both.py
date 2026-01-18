@@ -21,7 +21,7 @@ MULTI_RECORD_JSON = {
             "userAgent": "aws-cli/2.0",
             "requestID": "req-123",
             "eventID": "evt-001",
-            "eventType": "AwsApiCall"
+            "eventType": "AwsApiCall",
         },
         {
             "eventVersion": "1.08",
@@ -34,8 +34,8 @@ MULTI_RECORD_JSON = {
             "userAgent": "aws-sdk-java/1.11.100",
             "requestID": "req-456",
             "eventID": "evt-002",
-            "eventType": "AwsApiCall"
-        }
+            "eventType": "AwsApiCall",
+        },
     ]
 }
 
@@ -52,7 +52,7 @@ LINE_DELIMITED_JSON = [
         "userAgent": "aws-cli/2.0",
         "requestID": "req-789",
         "eventID": "evt-003",
-        "eventType": "AwsApiCall"
+        "eventType": "AwsApiCall",
     },
     {
         "eventVersion": "1.08",
@@ -65,9 +65,10 @@ LINE_DELIMITED_JSON = [
         "userAgent": "aws-cli/2.0",
         "requestID": "req-101112",
         "eventID": "evt-004",
-        "eventType": "AwsApiCall"
-    }
+        "eventType": "AwsApiCall",
+    },
 ]
+
 
 @pytest.fixture
 def multi_record_file():
@@ -76,6 +77,7 @@ def multi_record_file():
         f.flush()
         yield f.name
     os.remove(f.name)
+
 
 @pytest.fixture
 def line_delimited_file():
@@ -86,6 +88,7 @@ def line_delimited_file():
         yield f.name
     os.remove(f.name)
 
+
 def test_cloudtrail_parser_multi_record(multi_record_file):
     parser = CloudTrailParser()
     parsed = parser.parse_file(multi_record_file)
@@ -93,6 +96,7 @@ def test_cloudtrail_parser_multi_record(multi_record_file):
     assert len(parsed) == 2
     assert parsed[0]["user"] == "Alice"
     assert parsed[1]["user"] == "Bob"
+
 
 def test_cloudtrail_parser_line_delimited(line_delimited_file):
     parser = CloudTrailParser()

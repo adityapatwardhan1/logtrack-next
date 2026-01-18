@@ -4,9 +4,11 @@
 import pytest
 from core.parsers.hdfs_parser import HDFSParser
 
+
 @pytest.fixture
 def sample_hdfs_line():
-    return '1,081109,203518,143,INFO,dfs.DataNode$DataXceiver,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010,E5,Receiving block <*> src: /<*> dest: /<*>'
+    return "1,081109,203518,143,INFO,dfs.DataNode$DataXceiver,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010,E5,Receiving block <*> src: /<*> dest: /<*>"
+
 
 def test_parse_line(sample_hdfs_line):
     parser = HDFSParser()

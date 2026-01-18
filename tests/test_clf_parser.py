@@ -4,9 +4,11 @@
 import pytest
 from core.parsers.clf_parser import CLFParser
 
+
 @pytest.fixture
 def parser():
     return CLFParser(service="apache")
+
 
 def test_clf_parser_valid_lines(parser):
     # Sample CLF lines
@@ -25,6 +27,7 @@ def test_clf_parser_valid_lines(parser):
         assert "message" in result
         assert "extra_fields" in result
         assert "status" in result["extra_fields"]
+
 
 def test_clf_parser_invalid_line(parser):
     bad_line = "this is not a valid log"

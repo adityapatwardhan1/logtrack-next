@@ -1,6 +1,7 @@
 import sys
 from db.init_db import get_db_connection, get_dict_cursor
 
+
 def clear_all_alerts():
     con = get_db_connection()
     cur = con.cursor()
@@ -8,6 +9,7 @@ def clear_all_alerts():
     con.commit()
     cur.close()
     con.close()
+
 
 def clear_logs(hours):
     con = get_db_connection()
@@ -17,12 +19,13 @@ def clear_logs(hours):
         DELETE FROM logs
         WHERE timestamp < (NOW() AT TIME ZONE 'UTC') - (%s * INTERVAL '1 hour')
         """,
-        (hours,)
+        (hours,),
     )
     con.commit()
     cur.close()
     con.close()
     print(f"Cleared all logs that are >= {hours} hours old")
+
 
 def main():
     if len(sys.argv) < 2:
@@ -39,6 +42,6 @@ def main():
     else:
         print("Only options allowed are alerts or logs. Exiting")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
-    

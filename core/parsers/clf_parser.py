@@ -2,6 +2,7 @@ from core.parsers.base_parser import BaseParser
 import re
 from datetime import datetime
 
+
 class CLFParser(BaseParser):
     """
     Class for parsing Common Log Format files, used by Apache and Nginx among others.
@@ -17,7 +18,7 @@ class CLFParser(BaseParser):
         Parses line into the below schema
         {
         "timestamp": str,        # e.g. "YYYY-MM-DD HH:MM:SS"
-        "service": str,          
+        "service": str,
         "severity": str | None,  # e.g. "INFO", "WARN", "ERROR" (if available)
         "message": str,          # raw log text
         "user": str | None,      # user identifier if extractable
@@ -25,8 +26,8 @@ class CLFParser(BaseParser):
         }
         """
         regex = re.compile(
-            r'(?P<ip>\S+) (?P<identifier>\S+) (?P<user>\S+) '
-            r'\[(?P<datetime>[^\]]+)\] '
+            r"(?P<ip>\S+) (?P<identifier>\S+) (?P<user>\S+) "
+            r"\[(?P<datetime>[^\]]+)\] "
             r'"(?P<request>[^"]+)" (?P<status>\d{3}) (?P<bytes>\d+|-)'
         )
         regex_match = re.match(regex, line)
@@ -43,9 +44,14 @@ class CLFParser(BaseParser):
             "user": groups["user"] if groups["user"] != "-" else None,
             "extra_fields": {
                 "ip": groups["ip"],
-                "identifier": groups["identifier"] if groups["identifier"] != "-" else None,
+                "identifier": (
+                    groups["identifier"]
+                    if groups["identifier"] != "-"
+                    else None
+                ),
                 "status": int(groups["status"]),
-                "bytes": int(groups["bytes"]) if groups["bytes"].isdigit() else None
-            }
+                "bytes": (
+                    int(groups["bytes"]) if groups["bytes"].isdigit() else None
+                ),
+            },
         }
-    

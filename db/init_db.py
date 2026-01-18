@@ -7,12 +7,15 @@ load_dotenv()
 
 SCHEMA_FILE = "db/migrations/001_initial.sql"
 
+
 def get_db_connection():
     """Return a new psycopg2 connection using environment-based config."""
     return psycopg2.connect(**get_db_config())
 
+
 def get_dict_cursor(con):
     return con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
 
 def initialize_db():
     """Initializes database with schema from SCHEMA_FILE"""
@@ -22,6 +25,7 @@ def initialize_db():
             with open(SCHEMA_FILE, "r") as f:
                 cur.execute(f.read())
     print(f"Initialized database with schema at {SCHEMA_FILE}")
+
 
 if __name__ == "__main__":
     try:

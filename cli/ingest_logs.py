@@ -1,5 +1,5 @@
 # PYTHONPATH=. python3 cli/ingest_logs.py example.clf
-import sys 
+import sys
 from core.parsers import clf_parser, hdfs_parser, aws_cloudtrail_parser
 from db.init_db import *
 from psycopg2.extras import Json
@@ -9,6 +9,7 @@ import os
 
 ARTIFACT_PARSED_PATH = Path("artifacts/parsed/clf_parsed.json")
 
+
 def canonicalize_log(log):
     return {
         "timestamp": log.get("timestamp"),
@@ -16,8 +17,9 @@ def canonicalize_log(log):
         "severity": log.get("severity"),
         "message": log.get("message"),
         "user": log.get("user"),
-        "extra_fields": log.get("extra_fields", {})
+        "extra_fields": log.get("extra_fields", {}),
     }
+
 
 def main():
     # Arguments
@@ -26,7 +28,7 @@ def main():
         raise RuntimeError("FILE environment variable is required")
     emit_artifacts = os.getenv("EMIT_ARTIFACTS") == "1"
 
-    parser = None 
+    parser = None
     if filename.endswith(".clf"):
         parser = clf_parser.CLFParser()
     elif filename.endswith(".hdfs"):
@@ -49,8 +51,8 @@ def main():
                     key=lambda l: (
                         l.get("timestamp"),
                         l.get("service"),
-                        l.get("message")
-                    )
+                        l.get("message"),
+                    ),
                 )
             ]
             with open(ARTIFACT_PARSED_PATH, "w") as f:
@@ -73,10 +75,10 @@ def main():
                     log_json.get("severity"),
                     log_json.get("message"),
                     log_json.get("user"),
-                    Json(log_json.get("extra_fields", {}))
+                    Json(log_json.get("extra_fields", {})),
                 )
                 for log_json in log_data
-            ]
+            ],
         )
 
         con.commit()
@@ -85,5 +87,6 @@ def main():
     except Exception as e:
         print(f"An exception occured when parsing log file {filename}: {e}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

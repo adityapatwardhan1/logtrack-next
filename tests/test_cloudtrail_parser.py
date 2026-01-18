@@ -9,10 +9,7 @@ SAMPLE_CLOUDTRAIL = {
     "Records": [
         {
             "eventVersion": "1.08",
-            "userIdentity": {
-                "type": "IAMUser",
-                "userName": "Mateo"
-            },
+            "userIdentity": {"type": "IAMUser", "userName": "Mateo"},
             "eventTime": "2023-07-19T21:17:28Z",
             "eventSource": "ec2.amazonaws.com",
             "eventName": "StartInstances",
@@ -21,7 +18,7 @@ SAMPLE_CLOUDTRAIL = {
             "userAgent": "aws-cli/2.13.5",
             "requestID": "e4336db0-149f-4a6b-844d-EXAMPLEb9d16",
             "eventID": "e755e09c-42f9-4c5c-9064-EXAMPLE228c7",
-            "eventType": "AwsApiCall"
+            "eventType": "AwsApiCall",
         }
     ]
 }
@@ -29,6 +26,7 @@ SAMPLE_CLOUDTRAIL = {
 import json
 import tempfile
 import os
+
 
 @pytest.fixture
 def temp_json_file():
@@ -38,6 +36,7 @@ def temp_json_file():
         f.flush()
         yield f.name
     os.remove(f.name)
+
 
 def test_cloudtrail_parser(temp_json_file):
     parser = CloudTrailParser()
