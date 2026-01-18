@@ -1,11 +1,12 @@
+import json
+import os
 import sys
 import traceback
-from sqlite3 import OperationalError
-from core.detection.rule_detectors import evaluate_rules
-from core.detection.alert_manager import record_alert
-import json
 from pathlib import Path
-import os
+from sqlite3 import OperationalError
+
+from core.detection.alert_manager import record_alert
+from core.detection.rule_detectors import evaluate_rules
 
 ARTIFACT_ALERTS_PATH = Path("artifacts/alerts/clf_alerts.json")
 

@@ -1,6 +1,5 @@
-from core.parsers.base_parser import BaseParser
-from datetime import datetime
 import json
+from core.parsers.base_parser import BaseParser
 
 
 class CloudTrailParser(BaseParser):
@@ -56,7 +55,6 @@ class CloudTrailParser(BaseParser):
         if timestamp_raw:
             try:
                 timestamp = self.to_uniform_timestamp(timestamp_raw)
-                # timestamp = datetime.fromisoformat(timestamp_raw.replace("Z", "+00:00")).strftime("%Y-%m-%d %H:%M:%S")
             except ValueError:
                 timestamp = timestamp_raw
 

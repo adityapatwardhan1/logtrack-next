@@ -1,7 +1,6 @@
-from core.parsers.base_parser import BaseParser
 import csv
 from io import StringIO
-from datetime import datetime
+from core.parsers.base_parser import BaseParser
 
 
 class HDFSParser(BaseParser):
@@ -9,13 +8,13 @@ class HDFSParser(BaseParser):
     Class for parsing Hadoop Distributed File System files
     Example HDFS log line (sourced from Loglizer)
     LineId,Date,Time,Pid,Level,Component,Content,EventId,EventTemplate
-    1,081109,203518,143,INFO,dfs.DataNode$DataXceiver,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010,E5,Receiving block <*> src: /<*> dest: /<*>
-    2,081109,203518,35,INFO,dfs.FSNamesystem,BLOCK* NameSystem.allocateBlock: /mnt/hadoop/mapred/system/job_200811092030_0001/job.jar. blk_-1608999687919862906,E22,BLOCK* NameSystem.allocateBlock:<*>
+    1,081109,203518,143,INFO,dfs.DataNode$DataXceiver,Receiving block blk_-1608999687919862906 src: /10.250.19.102:54106 dest: /10.250.19.102:50010,E5,Receiving block <*> src: /<*> dest: /<*> # noqa: E501
+    2,081109,203518,35,INFO,dfs.FSNamesystem,BLOCK* NameSystem.allocateBlock: /mnt/hadoop/mapred/system/job_200811092030_0001/job.jar. blk_-1608999687919862906,E22,BLOCK* NameSystem.allocateBlock:<*> # noqa: E501
     Source:
     Reference:
     Shilin He, Jieming Zhu, Pinjia He, and Michael R. Lyu.
     "Experience Report: System Log Analysis for Anomaly Detection."
-    IEEE International Symposium on Software Reliability Engineering (ISSRE), 2016.
+    IEEE International Symposium on Software Reliability Engineering (ISSRE), 2016. # noqa: E501
     [Most Influential Paper Award]
     """
 
@@ -39,7 +38,7 @@ class HDFSParser(BaseParser):
 
         try:
             timestamp = self.to_uniform_timestamp(fields[1], fields[2])
-        except:
+        except Exception:
             timestamp = None
 
         return {

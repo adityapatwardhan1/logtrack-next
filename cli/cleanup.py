@@ -1,5 +1,6 @@
 import sys
-from db.init_db import get_db_connection, get_dict_cursor
+
+from db.init_db import get_db_connection
 
 
 def clear_all_alerts():

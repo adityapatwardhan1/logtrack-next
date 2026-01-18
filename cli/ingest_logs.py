@@ -1,11 +1,12 @@
 # PYTHONPATH=. python3 cli/ingest_logs.py example.clf
-import sys
-from core.parsers import clf_parser, hdfs_parser, aws_cloudtrail_parser
-from db.init_db import *
-from psycopg2.extras import Json
 import json
-from pathlib import Path
 import os
+from pathlib import Path
+
+from psycopg2.extras import Json
+
+from core.parsers import aws_cloudtrail_parser, clf_parser, hdfs_parser
+from db.init_db import get_db_connection
 
 ARTIFACT_PARSED_PATH = Path("artifacts/parsed/clf_parsed.json")
 
@@ -48,10 +49,10 @@ def main():
                 canonicalize_log(log)
                 for log in sorted(
                     log_data,
-                    key=lambda l: (
-                        l.get("timestamp"),
-                        l.get("service"),
-                        l.get("message"),
+                    key=lambda the_log: (
+                        the_log.get("timestamp"),
+                        the_log.get("service"),
+                        the_log.get("message"),
                     ),
                 )
             ]

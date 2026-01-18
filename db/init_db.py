@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
+
 from db.config import get_db_config
 
 load_dotenv()

@@ -4,6 +4,7 @@
 # python3 cli/create_user.py name password -r user
 
 import argparse
+
 from auth.auth import register_user
 
 

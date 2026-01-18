@@ -19,7 +19,7 @@ def parse_datetime_to_iso_format(datetime_str):
             if format == "%b %d %H:%M:%S":
                 datetime_str = datetime_str.replace(year=datetime.now().year)
             return datetime.strptime(datetime_str, format).isoformat()
-        except:
+        except Exception:
             continue
     raise ValueError(
         f"The given datetime {datetime_str} doesn't match any of the supported formats"

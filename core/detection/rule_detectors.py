@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta, timezone
 import math
 from collections import defaultdict
-from db.init_db import get_db_connection
+from datetime import datetime, timedelta, timezone
+
 import psycopg2
 import psycopg2.extras
-from datetime import datetime, timezone
+
+from db.init_db import get_db_connection
 
 
 def _parse_timestamp(timestamp):
@@ -79,7 +80,7 @@ def _keyword_threshold_alerts(dict_cur, rule):
                     "message": row["message"],
                 }
             )
-        except Exception as e:
+        except Exception:
             continue
 
     parsed.sort(key=lambda x: x["timestamp"])
@@ -92,7 +93,7 @@ def _keyword_threshold_alerts(dict_cur, rule):
                 "%Y-%m-%d %H:%M:%S"
             ),
             "message": f"Rule {rule['id']} triggered with {right - left + 1} matches",
-            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
         }
         alerts.append(alert)
         break
@@ -143,7 +144,7 @@ def _repeated_message_alerts(cur, rule):
                 "%Y-%m-%d %H:%M:%S"
             ),
             "message": f"Message '{message}' repeated {right - left + 1} times in {rule['window_minutes']}m",
-            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
         }
         alerts.append(alert)
         break
@@ -235,7 +236,7 @@ def _rate_spike_alerts(cur, rule):
                 "%Y-%m-%d %H:%M:%S"
             ),
             "message": f"{service} logged {right - left + 1} entries in {rule['window_seconds']}s",
-            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
         }
         alerts.append(alert)
         break
@@ -287,7 +288,7 @@ def _user_threshold_alerts(cur, rule):
                     "%Y-%m-%d %H:%M:%S"
                 ),
                 "message": f"User '{user}' triggered '{message}' {right - left + 1} times in {rule['window_minutes']}m",
-                "related_log_ids": [e["id"] for e in events[left : right + 1]],
+                "related_log_ids": [e["id"] for e in events[left: right + 1]],
             }
             alerts.append(alert)
             break  # One alert per user
@@ -407,7 +408,7 @@ def evaluate_rules(
     zscore_enabled=False, db_path=None, ml_enabled=False
 ) -> list[dict]:
     """
-    Applies all detection rules on the logs stored in the database and returns triggered alerts.
+    Applies all detection rules on the logs stored in the database and returns triggered alerts. # noqa: E501
 
     :param zscore_enabled: Whether to evaluate z-score rules
     :param ml_enabled: Whether to evaluate ML-based anomaly detection

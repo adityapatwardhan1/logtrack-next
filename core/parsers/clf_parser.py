@@ -1,6 +1,6 @@
-from core.parsers.base_parser import BaseParser
 import re
-from datetime import datetime
+
+from core.parsers.base_parser import BaseParser
 
 
 class CLFParser(BaseParser):

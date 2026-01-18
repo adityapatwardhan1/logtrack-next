@@ -1,6 +1,7 @@
 # db/reset_db.py
 import psycopg2
 from dotenv import load_dotenv
+
 from db.config import get_db_config
 
 load_dotenv()
