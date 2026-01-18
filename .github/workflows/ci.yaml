@@ -1,0 +1,134 @@
+# -----------------------------------------------------------------------------
+# LogTrack CI Workflow
+# -----------------------------------------------------------------------------
+# Project: LogTrack (https://github.com/<your-repo>)
+# Contributors: ChatGPT (OpenAI) — advised on CI design, job sequencing, E2E, and artifact validation
+# Version: 1.0
+# Date: 2026-01-17
+# -----------------------------------------------------------------------------
+# Description:
+#   Continuous Integration for LogTrack.
+#   - Checkout and Python environment setup
+#   - Linting (optional)
+#   - Unit tests
+#   - Golden-path E2E using PostgreSQL container
+#   - Artifact validation for deterministic CI
+#   Guidance and structure adapted from ChatGPT (OpenAI).
+# -----------------------------------------------------------------------------
+
+name: LogTrack CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ------------------------
+  # Job 1: Checkout & Python environment
+  # ------------------------
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      venv-path: ${{ steps.set-path.outputs.venv }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        id: set-path
+        run: |
+          # Adapted from ChatGPT (OpenAI) guidance on CI setup
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "venv=venv" >> $GITHUB_OUTPUT
+
+  # ------------------------
+  # Job 2: Lint / style checks (optional)
+  # ------------------------
+  lint:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+      - name: Activate venv and run flake8
+        run: |
+          # Lint step guided by ChatGPT (OpenAI)
+          . venv/bin/activate
+          pip install flake8
+          flake8 .
+
+  # ------------------------
+  # Job 3: Unit tests
+  # ------------------------
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run pytest
+        run: |
+          # Sequential step; must pass before E2E
+          . venv/bin/activate
+          PYTHONPATH=. pytest -q
+
+  # ------------------------
+  # Job 4: Golden-path E2E
+  # ------------------------
+  ci-e2e:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: logtrack
+          POSTGRES_USER: logtrack_user
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U logtrack_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Activate venv and run E2E
+        env:
+          FILE: samples/clf_golden.clf
+          EMIT_ARTIFACTS: "1"
+        run: |
+          # E2E guided by ChatGPT (OpenAI)
+          . venv/bin/activate
+          make ci-e2e
+
+  # ------------------------
+  # Job 5: Artifact validation
+  # ------------------------
+  assert-artifacts:
+    runs-on: ubuntu-latest
+    needs: ci-e2e
+    steps:
+      - uses: actions/checkout@v3
+      - name: Activate venv and assert alerts
+        run: |
+          # Diff alerts artifact; guidance: ChatGPT (OpenAI)
+          . venv/bin/activate
+          diff -bB artifacts/parsed/clf_alerts.json samples/expected/clf_alerts.json
+          echo "Alerts artifact matches expected"
+
+      - name: Activate venv and assert parsed logs
+        run: |
+          # Diff parsed logs; guidance: ChatGPT (OpenAI)
+          . venv/bin/activate
+          diff -bB artifacts/parsed/clf_parsed.json samples/expected/clf_parsed.json
+          echo "Parsed logs artifact matches expected"
