@@ -62,13 +62,9 @@ if not st.session_state.logged_in:
                 else:
                     st.error("Invalid username or password.")
             except Exception:
-                print(
-                    f"Unexpected error during login attempt for user '{username}':"
-                )
+                print(f"Unexpected error during login attempt for user '{username}':")
                 traceback.print_exc()
-                st.error(
-                    "An unexpected error occurred. Please try again later."
-                )
+                st.error("An unexpected error occurred. Please try again later.")
 
     st.stop()
 

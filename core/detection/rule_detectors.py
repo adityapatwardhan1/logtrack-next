@@ -26,14 +26,10 @@ def _parse_timestamp(timestamp):
         naive_datetime = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
         return naive_datetime.replace(tzinfo=timezone.utc)
     else:
-        raise TypeError(
-            f"Unsupported type for timestamp parsing: {type(timestamp)}"
-        )
+        raise TypeError(f"Unsupported type for timestamp parsing: {type(timestamp)}")
 
 
-def find_sliding_windows(
-    events: list[dict], window: timedelta, threshold: int
-):
+def find_sliding_windows(events: list[dict], window: timedelta, threshold: int):
     """
     Yields windows of a certain time length which contain threshold number of events
     :param events: Sorted list of dicts with 'timestamp' key (timezone-aware datetime objects)
@@ -89,11 +85,9 @@ def _keyword_threshold_alerts(dict_cur, rule):
     for left, right in find_sliding_windows(parsed, window, threshold):
         alert = {
             "rule_id": rule["id"],
-            "triggered_at": parsed[right]["timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            "triggered_at": parsed[right]["timestamp"].strftime("%Y-%m-%d %H:%M:%S"),
             "message": f"Rule {rule['id']} triggered with {right - left + 1} matches",
-            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
         }
         alerts.append(alert)
         break
@@ -117,9 +111,7 @@ def _repeated_message_alerts(cur, rule):
     threshold = rule["threshold"]
     window = timedelta(minutes=rule["window_minutes"])
 
-    cur.execute(
-        "SELECT id, timestamp FROM logs WHERE message = %s", (message,)
-    )
+    cur.execute("SELECT id, timestamp FROM logs WHERE message = %s", (message,))
     rows = cur.fetchall()
     parsed = []
 
@@ -140,11 +132,9 @@ def _repeated_message_alerts(cur, rule):
     for left, right in find_sliding_windows(parsed, window, threshold):
         alert = {
             "rule_id": rule["id"],
-            "triggered_at": parsed[right]["timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            "triggered_at": parsed[right]["timestamp"].strftime("%Y-%m-%d %H:%M:%S"),
             "message": f"Message '{message}' repeated {right - left + 1} times in {rule['window_minutes']}m",
-            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
         }
         alerts.append(alert)
         break
@@ -207,15 +197,11 @@ def _rate_spike_alerts(cur, rule):
 
     window = timedelta(seconds=window_seconds)
 
-    cur.execute(
-        "SELECT id, timestamp FROM logs WHERE service = %s", (service,)
-    )
+    cur.execute("SELECT id, timestamp FROM logs WHERE service = %s", (service,))
     rows = cur.fetchall()
     parsed = []
     for row in rows:
-        print(
-            f"Raw DB timestamp: {row['timestamp']} (type {type(row['timestamp'])})"
-        )
+        print(f"Raw DB timestamp: {row['timestamp']} (type {type(row['timestamp'])})")
         try:
             parsed.append(
                 {
@@ -232,11 +218,9 @@ def _rate_spike_alerts(cur, rule):
     for left, right in find_sliding_windows(parsed, window, threshold):
         alert = {
             "rule_id": rule["id"],
-            "triggered_at": parsed[right]["timestamp"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            "triggered_at": parsed[right]["timestamp"].strftime("%Y-%m-%d %H:%M:%S"),
             "message": f"{service} logged {right - left + 1} entries in {rule['window_seconds']}s",
-            "related_log_ids": [e["id"] for e in parsed[left: right + 1]],
+            "related_log_ids": [e["id"] for e in parsed[left : right + 1]],
         }
         alerts.append(alert)
         break
@@ -288,7 +272,7 @@ def _user_threshold_alerts(cur, rule):
                     "%Y-%m-%d %H:%M:%S"
                 ),
                 "message": f"User '{user}' triggered '{message}' {right - left + 1} times in {rule['window_minutes']}m",
-                "related_log_ids": [e["id"] for e in events[left: right + 1]],
+                "related_log_ids": [e["id"] for e in events[left : right + 1]],
             }
             alerts.append(alert)
             break  # One alert per user
@@ -364,17 +348,12 @@ def _zscore_alerts(cur, rule):
     sorted_indices = list(range(baseline_windows + 1))
     baseline_counts = [len(buckets[idx]) for idx in sorted_indices[:-1]]
     current_count = len(buckets[sorted_indices[-1]])
-    current_bucket_log_ids = [
-        log_id for log_id, _ in buckets[sorted_indices[-1]]
-    ]
+    current_bucket_log_ids = [log_id for log_id, _ in buckets[sorted_indices[-1]]]
 
     # Compute z-score
     mean = sum(baseline_counts) / len(baseline_counts)
     std = (
-        math.sqrt(
-            sum((x - mean) ** 2 for x in baseline_counts)
-            / len(baseline_counts)
-        )
+        math.sqrt(sum((x - mean) ** 2 for x in baseline_counts) / len(baseline_counts))
         if baseline_counts
         else 0
     )
@@ -404,9 +383,7 @@ def _zscore_alerts(cur, rule):
     return alerts
 
 
-def evaluate_rules(
-    zscore_enabled=False, db_path=None, ml_enabled=False
-) -> list[dict]:
+def evaluate_rules(zscore_enabled=False, db_path=None, ml_enabled=False) -> list[dict]:
     """
     Applies all detection rules on the logs stored in the database and returns triggered alerts. # noqa: E501
 

@@ -45,13 +45,9 @@ class CLFParser(BaseParser):
             "extra_fields": {
                 "ip": groups["ip"],
                 "identifier": (
-                    groups["identifier"]
-                    if groups["identifier"] != "-"
-                    else None
+                    groups["identifier"] if groups["identifier"] != "-" else None
                 ),
                 "status": int(groups["status"]),
-                "bytes": (
-                    int(groups["bytes"]) if groups["bytes"].isdigit() else None
-                ),
+                "bytes": (int(groups["bytes"]) if groups["bytes"].isdigit() else None),
             },
         }

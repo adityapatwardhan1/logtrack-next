@@ -35,9 +35,7 @@ def verify_user(username: str, input_password: str) -> bool:
 
     con = get_db_connection()
     cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute(
-        "SELECT password_hash FROM users WHERE username = %s", (username,)
-    )
+    cur.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
     row = cur.fetchone()
     con.close()
 

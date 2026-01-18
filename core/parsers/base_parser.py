@@ -72,7 +72,5 @@ class BaseParser(ABC):
                 try:
                     all_log_data.append(self.parse_line(line))
                 except Exception as e:
-                    print(
-                        f"Exception when parsing log file at {file_path}: {e}"
-                    )
+                    print(f"Exception when parsing log file at {file_path}: {e}")
         return all_log_data

@@ -9,9 +9,7 @@ from auth.auth import register_user
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create a new user for LogTrack"
-    )
+    parser = argparse.ArgumentParser(description="Create a new user for LogTrack")
     parser.add_argument("username", help="Username for the new user")
     parser.add_argument("password", help="Password for the new user")
     parser.add_argument(

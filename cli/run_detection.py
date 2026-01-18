@@ -64,9 +64,7 @@ def main():
     print("Rules triggered:", ", ".join(sorted(rules_triggered)))
     print("Alerts written to DB:")
     for alert in recorded_alerts:
-        print(
-            f"  - [{alert['rule_id']}] {alert['triggered_at']}: {alert['message']}"
-        )
+        print(f"  - [{alert['rule_id']}] {alert['triggered_at']}: {alert['message']}")
 
 
 if __name__ == "__main__":

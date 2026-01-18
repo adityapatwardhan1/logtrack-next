@@ -211,9 +211,7 @@ def test_keyword_threshold_no_alert(mock_cursor, now):
     }
 
     alerts = rd._keyword_threshold_alerts(mock_cursor, rule)
-    assert (
-        len(alerts) == 0
-    )  # should not trigger because threshold not met in window
+    assert len(alerts) == 0  # should not trigger because threshold not met in window
 
 
 # ------------------------
@@ -263,9 +261,7 @@ def test_zscore_no_alert(mock_cursor, now):
     # baseline: 6 windows, 5 logs each
     for w in range(6):
         for i in range(5):
-            logs.append(
-                fake_row(w * 10 + i, now - timedelta(minutes=(6 - w) * 5))
-            )
+            logs.append(fake_row(w * 10 + i, now - timedelta(minutes=(6 - w) * 5)))
 
     # current window: also 5 logs → matches baseline
     for i in range(30, 35):
@@ -293,19 +289,11 @@ def test_keyword_threshold_multiple_alerts(mock_cursor, now):
     # 6 logs total, 3 in first window, 3 in second window → 2 alerts
     logs = [
         fake_row(1, now - timedelta(minutes=10), message="error occurred"),
-        fake_row(
-            2, now - timedelta(minutes=9, seconds=50), message="error occurred"
-        ),
-        fake_row(
-            3, now - timedelta(minutes=9, seconds=40), message="error occurred"
-        ),
+        fake_row(2, now - timedelta(minutes=9, seconds=50), message="error occurred"),
+        fake_row(3, now - timedelta(minutes=9, seconds=40), message="error occurred"),
         fake_row(4, now - timedelta(minutes=5), message="error occurred"),
-        fake_row(
-            5, now - timedelta(minutes=4, seconds=50), message="error occurred"
-        ),
-        fake_row(
-            6, now - timedelta(minutes=4, seconds=40), message="error occurred"
-        ),
+        fake_row(5, now - timedelta(minutes=4, seconds=50), message="error occurred"),
+        fake_row(6, now - timedelta(minutes=4, seconds=40), message="error occurred"),
     ]
     mock_cursor.fetchall.return_value = logs
 
@@ -329,9 +317,7 @@ def test_keyword_threshold_multiple_alerts(mock_cursor, now):
 def test_repeated_message_multiple_alerts(mock_cursor, now):
     # 10 logs, threshold 3, 2 windows → 2 alerts expected
     logs = [
-        fake_row(
-            i, now - timedelta(minutes=5 - i * 0.5), message="login failed"
-        )
+        fake_row(i, now - timedelta(minutes=5 - i * 0.5), message="login failed")
         for i in range(10)
     ]
     mock_cursor.fetchall.return_value = logs
