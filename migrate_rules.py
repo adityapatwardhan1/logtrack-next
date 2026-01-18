@@ -1,6 +1,7 @@
 import json
 from db.init_db import get_db_connection
 
+
 def migrate_rules(json_path="rules_config.json"):
     with open(json_path, "r") as f:
         rules = json.load(f)
@@ -34,7 +35,7 @@ def migrate_rules(json_path="rules_config.json"):
             rule.get("message"),
             rule.get("threshold"),
             rule.get("window_minutes"),
-            rule.get("window_seconds"), 
+            rule.get("window_seconds"),
             rule.get("max_idle_minutes"),
             rule.get("user_field"),
             rule.get("description", ""),
@@ -44,6 +45,7 @@ def migrate_rules(json_path="rules_config.json"):
     con.commit()
     con.close()
     print("Migration complete.")
+
 
 if __name__ == "__main__":
     migrate_rules()

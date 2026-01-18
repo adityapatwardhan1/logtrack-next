@@ -3,6 +3,9 @@
 
 import pytest
 from core.parsers.aws_cloudtrail_parser import CloudTrailParser
+import json
+import tempfile
+import os
 
 # Sample CloudTrail JSON (truncated for brevity)
 SAMPLE_CLOUDTRAIL = {
@@ -22,10 +25,6 @@ SAMPLE_CLOUDTRAIL = {
         }
     ]
 }
-
-import json
-import tempfile
-import os
 
 
 @pytest.fixture
