@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # Project: LogTrack (https://github.com/<your-repo>)
 # Contributors: ChatGPT (OpenAI) — advised on CI design, job sequencing, E2E, and artifact validation
-# Version: 1.1
+# Version: 1.2
 # Date: 2026-01-17
 # -----------------------------------------------------------------------------
 # Description:
@@ -11,7 +11,7 @@
 #   - Checkout and Python environment setup
 #   - Unit tests
 #   - Golden-path E2E using PostgreSQL container
-#   - Artifact validation for deterministic CI
+#   - Artifact upload/download for deterministic CI validation
 # -----------------------------------------------------------------------------
 
 name: LogTrack CI
@@ -31,7 +31,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python and venv
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
         run: |
           python -m venv venv
           . venv/bin/activate
@@ -66,20 +71,31 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python and venv
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
         run: |
           python -m venv venv
           . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run E2E
+      - name: Run E2E and upload artifacts
         env:
           FILE: samples/clf_golden.clf
           EMIT_ARTIFACTS: "1"
         run: |
           . venv/bin/activate
           make ci-e2e
+        # Upload artifacts for the next job
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: logtrack-artifacts
+          path: artifacts/parsed
 
   # ------------------------
   # Job 3: Artifact validation
@@ -90,12 +106,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python and venv
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
         run: |
           python -m venv venv
           . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Download artifacts from E2E
+        uses: actions/download-artifact@v3
+        with:
+          name: logtrack-artifacts
+          path: artifacts/parsed
 
       - name: Assert alerts artifact
         run: |
