@@ -1,9 +1,9 @@
 # -----------------------------------------------------------------------------
 # LogTrack CI Workflow
 # -----------------------------------------------------------------------------
-# Project: LogTrack (https://github.com/adityapatwardhan1/logtrack-next/)
-# Version: 1.3
-# Date: 2026-01-17
+# Project: LogTrack
+# Version: 1.4
+# Date: 2026-01-18
 # -----------------------------------------------------------------------------
 
 name: LogTrack CI
@@ -16,10 +16,48 @@ on:
 
 jobs:
   # ------------------------
+  # Job 0: Linting
+  # ------------------------
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependencies
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 black isort
+
+      - name: Run flake8
+        run: |
+          . venv/bin/activate
+          flake8 .
+
+      - name: Run black (check only)
+        run: |
+          . venv/bin/activate
+          black --check .
+
+      - name: Run isort (check only)
+        run: |
+          . venv/bin/activate
+          isort --check-only .
+
+  # ------------------------
   # Job 1: Unit tests
   # ------------------------
   unit-tests:
     runs-on: ubuntu-latest
+    needs: lint
 
     steps:
       - uses: actions/checkout@v3
@@ -39,7 +77,6 @@ jobs:
         run: |
           . venv/bin/activate
           PYTHONPATH=. pytest -q
-
 
   # ------------------------
   # Job 2: Golden-path E2E
@@ -85,13 +122,11 @@ jobs:
           . venv/bin/activate
           make ci-e2e
 
-      # 🔴 FIX: upload *all* artifacts, not just parsed
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: logtrack-artifacts
           path: artifacts/**
-
 
   # ------------------------
   # Job 3: Artifact validation
@@ -114,7 +149,6 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🔴 FIX: download to repo root so structure is preserved
       - name: Download artifacts from E2E
         uses: actions/download-artifact@v4
         with:
