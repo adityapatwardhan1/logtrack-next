@@ -1,6 +1,5 @@
 import sys
 import traceback
-import argparse
 from sqlite3 import OperationalError
 from core.detection.rule_detectors import evaluate_rules
 from core.detection.alert_manager import record_alert
@@ -20,16 +19,12 @@ def canonicalize_alert(alert):
 
 def main():
     """Main script for running detection"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--db-path', default='logtrack.db',
-                        help='Path to SQLite database file (default: logtrack.db)')
-    parser.add_argument("--zscore", action="store_true", help="Enable z-score based anomaly detection")
     emit_artifacts = os.getenv("EMIT_ARTIFACTS") == "1"
-    args = parser.parse_args()
+    zscore_enabled = os.getenv("ZSCORE_ENABLED") == "1"
 
     # Rules based detection
     try:
-        triggered_alerts = evaluate_rules(zscore_enabled=args.zscore)
+        triggered_alerts = evaluate_rules(zscore_enabled=zscore_enabled)
         
     except OperationalError as e:
         print('An error occurred when connecting to the database file:')

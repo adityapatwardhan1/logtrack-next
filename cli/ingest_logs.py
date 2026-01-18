@@ -3,7 +3,6 @@ import sys
 from core.parsers import clf_parser, hdfs_parser, aws_cloudtrail_parser
 from db.init_db import *
 from psycopg2.extras import Json
-import argparse
 import json
 from pathlib import Path
 import os
@@ -22,15 +21,10 @@ def canonicalize_log(log):
 
 def main():
     # Arguments
-    parser = argparse.ArgumentParser(description="Ingest logs into LogTrack")
-    parser.add_argument("filename", help="Log file to ingest")
-    parser.add_argument("--emit-artifacts", action="store_true",
-                        help="Emit parsed log artifacts for CI validation")
+    filename = os.getenv("FILE")
+    if not filename:
+        raise RuntimeError("FILE environment variable is required")
     emit_artifacts = os.getenv("EMIT_ARTIFACTS") == "1"
-
-    args = parser.parse_args()
-    # Filename
-    filename = args.filename
 
     parser = None 
     if filename.endswith(".clf"):
