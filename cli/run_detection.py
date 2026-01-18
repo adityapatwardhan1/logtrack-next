@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--db-path', default='logtrack.db',
                         help='Path to SQLite database file (default: logtrack.db)')
     parser.add_argument("--zscore", action="store_true", help="Enable z-score based anomaly detection")
-    parser.add_argument("--emit-artifacts", action="store_false")
+    parser.add_argument("--emit-artifacts", action="store_true")
     args = parser.parse_args()
 
     # Rules based detection

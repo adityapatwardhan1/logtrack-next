@@ -23,7 +23,7 @@ def main():
     # Arguments
     parser = argparse.ArgumentParser(description="Ingest logs into LogTrack")
     parser.add_argument("filename", help="Log file to ingest")
-    parser.add_argument("--emit-artifacts", action="store_false",
+    parser.add_argument("--emit-artifacts", action="store_true",
                         help="Emit parsed log artifacts for CI validation")
     args = parser.parse_args()
     # Filename
