@@ -1,10 +1,21 @@
 import sys
 import traceback
 import argparse
-import os
 from sqlite3 import OperationalError
 from core.detection.rule_detectors import evaluate_rules
 from core.detection.alert_manager import record_alert
+import json
+from pathlib import Path
+
+ARTIFACT_ALERTS_PATH = Path("artifacts/alerts/clf_alerts.json")
+
+def canonicalize_alert(alert):
+    """Return dict with stable key order for diffing"""
+    return {
+        "rule_id": alert.get("rule_id"),
+        "message": alert.get("message"),
+        "service": alert.get("service")
+    }
 
 def main():
     """Main script for running detection"""
@@ -12,11 +23,13 @@ def main():
     parser.add_argument('--db-path', default='logtrack.db',
                         help='Path to SQLite database file (default: logtrack.db)')
     parser.add_argument("--zscore", action="store_true", help="Enable z-score based anomaly detection")
+    parser.add_argument("--emit-artifacts", action="store_false")
     args = parser.parse_args()
 
     # Rules based detection
     try:
         triggered_alerts = evaluate_rules(zscore_enabled=args.zscore)
+        
     except OperationalError as e:
         print('An error occurred when connecting to the database file:')
         print(e)
@@ -31,6 +44,19 @@ def main():
     for alert in triggered_alerts:
         recorded_alerts.append(alert)
         record_alert(alert)
+
+    if args.emit_artifacts:
+        ARTIFACT_ALERTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+        normalized_alerts = sorted(
+            [canonicalize_alert(a) for a in recorded_alerts],
+            key=lambda a: (a["rule_id"])
+        )
+
+        with open(ARTIFACT_ALERTS_PATH, "w") as f:
+            json.dump(normalized_alerts, f, indent=2)
+
+        print(f"Alert artifacts written to {ARTIFACT_ALERTS_PATH}")
 
     num_alerts_triggered = len(triggered_alerts)
     rules_triggered = set(alert["rule_id"] for alert in triggered_alerts)

@@ -1,0 +1,58 @@
+[
+  {
+    "timestamp": "2020-01-20 21:32:14",
+    "service": "apache",
+    "severity": null,
+    "message": "GET /index.html HTTP/1.1",
+    "user": "john",
+    "extra_fields": {
+      "ip": "127.0.0.1",
+      "identifier": null,
+      "status": 200,
+      "bytes": 1024
+    }
+  },
+  {
+    "timestamp": "2020-01-20 21:32:15",
+    "service": "apache",
+    "severity": null,
+    "message": "POST /login HTTP/1.1",
+    "user": "mary",
+    "extra_fields": {
+      "ip": "127.0.0.1",
+      "identifier": null,
+      "status": 401,
+      "bytes": 512
+    }
+  },
+  {
+    "timestamp": "2020-01-20 21:32:16",
+    "service": "apache",
+    "severity": null,
+    "message": "GET /admin HTTP/1.1",
+    "user": null,
+    "extra_fields": {
+      "ip": "10.0.0.5",
+      "identifier": null,
+      "status": 403,
+      "bytes": 256
+    }
+  },
+  
+  {
+    "timestamp": "2020-01-20 21:32:17",
+    "service": "apache",
+    "severity": null,
+    "message": "GET /health HTTP/1.1",
+    "user": "alice",
+    "extra_fields": {
+      "ip": "192.168.1.10",
+      "identifier": null,
+      "status": 200,
+      "bytes": null
+    }
+  }
+]
+
+
+

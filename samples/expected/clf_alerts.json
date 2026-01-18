@@ -1,0 +1,12 @@
+[
+  {
+    "rule_id": "apache_inactivity_60min",
+    "message": "No logs from 'apache' in the past 60 minutes",
+    "service": null
+  },
+  {
+    "rule_id": "apache_rate_spike",
+    "message": "apache logged 4 entries in 300s",
+    "service": null
+  }
+]
